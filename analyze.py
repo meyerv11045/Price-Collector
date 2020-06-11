@@ -52,12 +52,14 @@ def get_url(input_file,output_file):
     products = load_products(input_file)
     rows = []
     for item in products:
+        print(item)
         resp = get_prod_info(item,field='basic')
         try:
             url = resp["basic"]["productUrl"]
-            rows.append([item,url])
+            rows.append([item,f'https://grocery.walmart.com{url}'])
         except KeyError:
             rows.append([item,'No URL'])
+        
     write_to_csv(output_file,rows)
 
 if __name__ == '__main__':    

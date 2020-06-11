@@ -3,3 +3,4 @@ env/
 .vscode
 .DS_STORE
 *.txt
+__pycache__/
