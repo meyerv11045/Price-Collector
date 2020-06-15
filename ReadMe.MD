@@ -2,7 +2,8 @@
 Collects price data from Walmart using an API. 
 
 ### Requirements:
-This script utilizes the requests library: `pip install requests`
+This script utilizes the requests library for making HTTP requests and the dotenv library for reading environment variables from a .env file
+ `pip3 install requests,python-dotenv`
 
 ### Running the Program
 The main functionality is in the `get_prices.py` script. The additional scripts are used to explore/analyze the data at various stages.

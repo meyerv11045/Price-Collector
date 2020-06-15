@@ -4,3 +4,5 @@ env/
 .DS_STORE
 *.txt
 __pycache__/
+kroger_data/
+walmart_data/

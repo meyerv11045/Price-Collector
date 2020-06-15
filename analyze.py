@@ -1,8 +1,4 @@
-# 6/11/2020
-
 import csv
-import requests
-from get_prices import load_products,get_prod_info, write_to_csv
 
 def get_stats(input_file):
     """ Takes a csv file with product_id and price and prints how
@@ -24,7 +20,7 @@ def get_stats(input_file):
         print(f'Out of Stock: {out_of_stock} of {total}')
         print(f'Product Not Found: {not_found} of {total}')
 
-def parse_output(input_file,output_file):
+def parse_output(self,input_file,output_file):
     """ Takes a csv file with product_id and price and writes to a new file the product ids
         of those that were Out of Stock and had no price returned in the API call
 
@@ -40,29 +36,3 @@ def parse_output(input_file,output_file):
         for line in csv_reader:
             if line[1] == 'Out of Stock':
                 csv_writer.writerow([line[0]])
-
-def get_url(input_file,output_file):
-    """ Takes the csv file of product ids that were Out of Stock and calls Walmart API
-        to get the product's url so the price can be web/manually scraped if it exists
-
-    Args:
-        input_file (str): path to csv file of Out of Stock product ids
-        output_file (str): path to new csv file of Out of Stock product ids and their urls
-    """
-    products = load_products(input_file)
-    rows = []
-    for item in products:
-        print(item)
-        resp = get_prod_info(item,field='basic')
-        try:
-            url = resp["basic"]["productUrl"]
-            rows.append([item,f'https://grocery.walmart.com{url}'])
-        except KeyError:
-            rows.append([item,'No URL'])
-        
-    write_to_csv(output_file,rows)
-
-if __name__ == '__main__':    
-   IN = input('Enter the path to the input file of Out of Stock product ids: ')
-   OUT = input('Enter the path to the output file for urls: ')
-   get_url(IN,OUT)
