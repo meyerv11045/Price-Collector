@@ -15,9 +15,10 @@ class KrogerPriceCollector:
         self.credentials = ''
         self.api_base = 'https://api-ce.kroger.com'
         self.access_token = ''
-        self.location_id = '01400929'
+        self.location_id = '01400929' # 1 W Corry St, Cincinnati, OH 45219
     
-    def url_to_uuid(self,input_name,output_name):
+    @staticmethod
+    def url_to_uuid(input_name,output_name):
         with open(input_name,'r') as f1, open(output_name,'w') as f2:
             csv_reader, csv_writer = csv.reader(f1), csv.writer(f2)
             next(csv_reader)
@@ -106,6 +107,10 @@ class KrogerPriceCollector:
         print(f'Finished collecting Kroger prices in {end-start //60} minutes')
 
 if __name__ == '__main__':
+    #Preprocess the urls into uuids
+    #KrogerPriceCollector.url_to_uuid('kroger_urls.csv','kroger_ids.csv')
+    
+    #Collect prices for the kroger uuids
     input_file = input('Enter path to kroger input file: ')
     output_file = input('Enter path to kroger output file: ')
     kroger = KrogerPriceCollector(input_file,output_file)
