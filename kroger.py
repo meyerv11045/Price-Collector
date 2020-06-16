@@ -67,6 +67,12 @@ class KrogerPriceCollector:
             'Authorization': f'Bearer {self.access_token}'
         }
         r = requests.get(url,headers=headers)
+        
+        #Checks for invalid/expired access token
+        if r.status_code == 401:
+            self.get_access_token()
+            return self.get_product(item_id)
+        
         if int(r.headers['content-length']) > 0:
             return r.json()
         else:
