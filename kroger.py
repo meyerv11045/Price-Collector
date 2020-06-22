@@ -19,6 +19,13 @@ class KrogerPriceCollector:
     
     @staticmethod
     def url_to_uuid(input_name,output_name):
+        """ Takes an csv input file of Kroger urls and writes the kroger
+            product ids to a new csv file
+
+        Args:
+            input_name (str): Path to the input csv file
+            output_name (str): Path to the output csv file
+        """
         with open(input_name,'r') as f1, open(output_name,'w') as f2:
             csv_reader, csv_writer = csv.reader(f1), csv.writer(f2)
             next(csv_reader)
@@ -30,6 +37,15 @@ class KrogerPriceCollector:
                 csv_writer.writerow([product_id])
     
     def get_credentials(self):
+        """ Loads the client id and client secret from the .env
+            file and creates the credentials specified in the kroger
+            api documentation using base64 encoding
+
+        Raises:
+            EnvironmentError:   CLIENT_ID or CLIENT_SECRET were not
+                                set in the .env file
+        """
+        
         load_dotenv()
         
         client_id = getenv('CLIENT_ID')
@@ -49,6 +65,9 @@ class KrogerPriceCollector:
         print('Credentials Created')
     
     def get_access_token(self):
+        """ Calls the Kroger authentication API using the credentials
+            property and sets the access token property as the api return value
+        """
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': f'Basic {self.credentials}'
@@ -60,6 +79,15 @@ class KrogerPriceCollector:
         print('Access Token Received')
 
     def get_product(self,item_id):
+        """ Calls the kroger API for the specified product
+            and returns the response as a dict 
+
+        Args:
+            item_id (str): The 13 digit Kroger product id (leading 0s are only retained in string form)
+
+        Returns:
+            dict: JSON response from API or empty dict signifying an empty response
+        """
         url = f'{self.api_base}/v1/products/{item_id}?filter.locationId={self.location_id}'
 
         headers = {
@@ -79,6 +107,15 @@ class KrogerPriceCollector:
             return {}
 
     def find_price(self,response):
+        """ Parses through the dictionary response
+            and returns the price if available
+
+        Args:
+            response (dict): The JSON response from the Kroger API call for the product
+
+        Returns:
+            str: The price or parsing error message
+        """
         try:
             items = response['data']['items'][0]
             try: 
@@ -90,6 +127,11 @@ class KrogerPriceCollector:
             return 'DNE'
 
     def collect_prices(self):
+        """ Collects kroger prices for csv list of ids 
+            specified under input_file property and writes the 
+            prices to a new csv file under the path specified in the
+            output_file property
+        """
         with open(self.input_file_name,'r') as read, open(self.output_file_name,'w') as write:
             csv_reader, csv_writer = csv.reader(read),csv.writer(write)
             
@@ -105,6 +147,9 @@ class KrogerPriceCollector:
                 csv_writer.writerow([item,price])
 
     def run(self):
+        """ Calls authentication functions in proper order
+            and then collects prices
+        """
         start = time()
         self.get_credentials()
         self.get_access_token()
