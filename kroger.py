@@ -105,7 +105,7 @@ class KrogerPriceCollector:
             return r.json()
         else:
             return {}
-
+                
     def find_price(self,response):
         """ Parses through the dictionary response
             and returns the price if available
