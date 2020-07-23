@@ -137,7 +137,7 @@ class KrogerPriceCollector:
             
             #Skip & Write Headers
             next(csv_reader)
-            csv_writer.writerow(['Product Id','Price'])
+            csv_writer.writerow(['barcodeData','price'])
 
             for val,line in enumerate(csv_reader):
                 item = line[0]
@@ -150,17 +150,12 @@ class KrogerPriceCollector:
         """ Calls authentication functions in proper order
             and then collects prices
         """
-        start = time()
         self.get_credentials()
         self.get_access_token()
         self.collect_prices()
-        end = time()
-        print(f'Finished collecting Kroger prices in {end-start //60} minutes')
+        
 
-if __name__ == '__main__':
-    #Preprocess the urls into uuids
-    #KrogerPriceCollector.url_to_uuid('kroger_urls.csv','kroger_ids.csv')
-    
+if __name__ == '__main__':   
     #Collect prices for the kroger uuids
     input_file = input('Enter path to kroger input file: ')
     output_file = input('Enter path to kroger output file: ')

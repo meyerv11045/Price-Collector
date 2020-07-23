@@ -92,10 +92,10 @@ class WalmartPrices(WalmartCore):
             
             #Skip & Write Headers
             next(csv_reader)
-            csv_writer.writerow(['Product Id','Price'])
+            csv_writer.writerow(['barcodeData','price'])
 
             for val,line in enumerate(csv_reader):
-                item = line[0]
+                item = line[1]
                 try:
                     response = self.get_product(item)
                     price = self.find_price(response,item)
@@ -179,8 +179,90 @@ class WalmartGlutenFree(WalmartCore):
                     print(f'Ended on item # {val + 1} | ID: {item}')
                     raise SystemExit(e)
 
+class WalmartNutritionFacts(WalmartCore):
+    def __init__(self, input_file_name, output_file_name):
+        super().__init__(input_file_name, output_file_name)
+
+    def find_nutrition_facts(self,response):
+        find = ['calories','fat','fatUnits','protein','proteinUnits','carbs','carbsUnits']
+        info = {x: None for x in find}
+        
+        if 'nutritionFacts' in response:
+            nutritionFacts = response['nutritionFacts']
+            
+            if 'calorieInformation' in nutritionFacts:
+                calorieInformation = nutritionFacts['calorieInformation']
+                if 'caloriesPerServing' in calorieInformation:
+                    calories = calorieInformation['caloriesPerServing']
+                    pattern = re.compile('\d+\.?\d?',re.IGNORECASE)
+                    info['calories'] = round(float(pattern.findall(calories)[0]))
+        
+            if 'keyNutrients' in nutritionFacts:
+                keyNutrients = nutritionFacts['keyNutrients']
+
+                for nutrient in keyNutrients:
+                    pattern = re.compile('\d+\.?\d?')
+                    
+                    if 'amountPerServing' not in nutrient:
+                        continue
+            
+                    amt = nutrient['amountPerServing']
+
+                    if '<' in amt: amt = 0
+                    else: 
+                        nums = pattern.findall(amt)
+                        if len(nums) > 0:
+                            amt = round(float(nums[0]))
+
+                    #Fat
+                    if nutrient['name'] == 'totalFat':
+                        info['fat'] = amt
+                        info['fatUnits'] = 'g'
+
+                    #Carbs
+                    if nutrient['name'] == 'totalCarbs':
+                        info['carbs'] = amt
+                        info['carbsUnits'] = 'g'
+                
+                    #Protein
+                    if nutrient['name'] == 'protein':
+                        info['protein'] = amt
+                        info['proteinUnits'] = 'g'
+                
+            return info
+
+        else:
+            return info
+    
+    def collect_nutrition(self):
+        """ Loads the input data, collects nutrition facts from the walmart API, 
+            and writes the results to a new csv file 
+
+            Raises:
+                SystemExit: If Walmart resets/ends the connection because of too many consecutive
+                            API calls from one IP address, the script terminates
+        """    
+        with open(self.input_file_name,'r') as read, open(self.output_file_name,'w') as write:
+            csv_reader, csv_writer = csv.reader(read),csv.writer(write)
+            
+            #Skip & Write Headers
+            next(csv_reader)
+            csv_writer.writerow(['barcodeData','fat','fatUnits','carbs','carbsUnits','protein','proteinUnits','calories'])
+            
+            for val,line in enumerate(csv_reader):
+                item = line[0]
+                try:
+                    response = self.get_product(item,field='nutritionFacts')
+                    info = self.find_nutrition_facts(response)
+                    print(f'{val+1} | {item} Done')
+                    row = [item,info['fat'],info['fatUnits'],info['carbs'],info['carbsUnits'],info['protein'],info['proteinUnits'],info['calories']]
+                    csv_writer.writerow(row)
+                except requests.exceptions.ConnectionError as e:
+                    print(e)
+                    continue
+
 if __name__ == '__main__':
-    mode = input('Enter GF for to flag products as gluten free or P to collect prices: ')
+    mode = input('Enter GF- flag products as gluten free, P- collect prices, or NF- collet nutrition facts: ')
     input_file = input('Enter path to walmart input file: ')
     output_file = input('Enter path to walmart output file: ')
     if mode == 'P':
@@ -189,5 +271,8 @@ if __name__ == '__main__':
     elif mode == 'GF':
         walmart_gf = WalmartGlutenFree(input_file,output_file)
         walmart_gf.label_GF_products()
+    elif mode == 'NF':
+        walmart_nf = WalmartNutritionFacts(input_file,output_file)
+        walmart_nf.collect_nutrition()
     else:
-        print('No mode (GF or P) entered')
+        print('No mode (GF or P or NF) entered')
