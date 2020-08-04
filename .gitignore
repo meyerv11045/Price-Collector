@@ -6,3 +6,5 @@ env/
 __pycache__/
 *.csv
 data/
+.gitignore
+analyze.py

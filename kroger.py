@@ -3,12 +3,10 @@ import csv
 from os import getenv
 from base64 import b64encode
 from time import time
-
-#pip3 install python-dotenv,requests
-from dotenv import load_dotenv 
+from configparser import ConfigParser
 import requests 
 
-class KrogerPriceCollector:
+class KrogerCore:
     def __init__(self,input_file_name,output_file_name):
         self.input_file_name = input_file_name
         self.output_file_name = output_file_name
@@ -36,7 +34,7 @@ class KrogerPriceCollector:
 
                 csv_writer.writerow([product_id])
     
-    def get_credentials(self):
+    def get_credentials(self,filename='config.ini',section='KrogerApi'):
         """ Loads the client id and client secret from the .env
             file and creates the credentials specified in the kroger
             api documentation using base64 encoding
@@ -45,11 +43,15 @@ class KrogerPriceCollector:
             EnvironmentError:   CLIENT_ID or CLIENT_SECRET were not
                                 set in the .env file
         """
-        
-        load_dotenv()
-        
-        client_id = getenv('CLIENT_ID')
-        client_secret = getenv('CLIENT_SECRET')
+
+        client_id = ''
+        client_secret = ''
+
+        parser = ConfigParser()
+        parser.read(filename)
+        if parser.has_section(section):
+            client_id = parser[section]['client_id']
+            client_secret = parser[section]['client_secret']
         
         if client_id == None:
             raise EnvironmentError('Set CLIENT_ID in .env file')
@@ -105,7 +107,11 @@ class KrogerPriceCollector:
             return r.json()
         else:
             return {}
-                
+
+class KrogerPriceCollector(KrogerCore):
+    def __init__(self,input_file_name,output_file_name):
+        super().__init__(input_file_name,output_file_name)
+
     def find_price(self,response):
         """ Parses through the dictionary response
             and returns the price if available
