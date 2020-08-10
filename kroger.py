@@ -1,6 +1,4 @@
-#Vikram Meyer 6/15/2020
 import csv
-from os import getenv
 from base64 import b64encode
 from time import time
 from configparser import ConfigParser
@@ -50,15 +48,13 @@ class KrogerCore:
         parser = ConfigParser()
         parser.read(filename)
         if parser.has_section(section):
-            client_id = parser[section]['client_id']
-            client_secret = parser[section]['client_secret']
+            try:
+                client_id = parser[section]['client_id']
+                client_secret = parser[section]['client_secret']
+            except KeyError:
+                raise KeyError(f'Set client_id and client_secret in {filename} file')
         
-        if client_id == None:
-            raise EnvironmentError('Set CLIENT_ID in .env file')
-        if client_secret == None:
-            raise EnvironmentError('Set CLIENT_SECRET in .env file')
-        
-        print('Client ID and Secret retrieved from .env file')
+        print(f'Client ID and Secret retrieved from {filename}')
 
         #Base64 Encoding client_id:client_secret to create credentials specified in Kroger API Docs
         combo = f'{client_id}:{client_secret}'.encode('utf-8')

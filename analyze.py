@@ -1,6 +1,6 @@
 import csv
 
-def get__walmart_stats(input_file):
+def get_walmart_stats(input_file):
     """ Takes a csv file with product_id and price and prints how
         many products are Out of Stock and how many were Not Found
 
@@ -38,6 +38,12 @@ def parse_output(self,input_file,output_file):
                 csv_writer.writerow([line[0]])
 
 def get_kroger_stats(prices_file):
+    """ Takes a csv file with kroger product ids and prices and prints how
+        many products do not exist (DNE) in kroger's database
+
+    Args:
+        prices_file (str): path to the csv file to be read/analyzed
+    """    
     with open(prices_file,'r') as f1:
         csv_reader = csv.reader(f1)
         next(csv_reader)
@@ -48,19 +54,6 @@ def get_kroger_stats(prices_file):
             total += 1
         print(f'{count} out of {total} DNE')
 
-def comp(f1,f2):
-    with open(f1,'r') as f1, open(f2,'r') as f2:
-        reader1, reader2 = csv.reader(f1),csv.reader(f2)
-        next(reader1)
-        next(reader2)
-        for line in zip(reader1,reader2):
-            if line[0][0] != line[1][0]: 
-                return line[0][0]
-            
-
-
-
 if __name__ == '__main__':
-   # get_kroger_stats('./kroger_data/prices.csv')
-
-   print(comp('./kroger_data/kroger_ids.csv','./kroger_data/prices.csv'))
+    input_file = input('Enter path to csv file to be analyzed: ')
+    get_kroger_stats(input_file)
