@@ -1,5 +1,4 @@
 env/
-.env
 .vscode
 .DS_STORE
 *.txt
@@ -8,3 +7,4 @@ __pycache__/
 data/
 .gitignore
 analyze.py
+config.ini
